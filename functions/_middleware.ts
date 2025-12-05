@@ -578,16 +578,21 @@ app.get('/api/events/:eventId/unassigned', async (c) => {
   }
 });
 
-// 404 처리
-app.notFound((c) => {
-  return c.json({ error: 'Not Found' }, 404);
-});
-
 // Cloudflare Pages Functions export
-export const onRequest: PagesFunction<Env> = async (context) => {
-  return app.fetch(context.request, context.env as Env);
-};
-
-interface PagesFunction<E = any> {
-  (context: { request: Request; env: E }): Response | Promise<Response>;
+interface PagesContext<E = any> {
+  request: Request;
+  env: E;
+  next: () => Promise<Response>;
 }
+
+export const onRequest = async (context: PagesContext<Env>): Promise<Response> => {
+  const url = new URL(context.request.url);
+
+  // API 경로만 Hono로 처리
+  if (url.pathname.startsWith('/api/')) {
+    return app.fetch(context.request, context.env as Env);
+  }
+
+  // 나머지는 정적 파일 서빙 (Pages가 처리)
+  return context.next();
+};
