@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Challenge 100 - 팀빌딩</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+    }
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 20px;
+      color: #a0a0c0;
+      margin-bottom: 50px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 35px 25px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: #667eea;
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+    }
+    .card-icon {
+      font-size: 45px;
+      margin-bottom: 15px;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 14px;
+      color: #a0a0c0;
+    }
+    .phase-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 20px;
+      font-size: 14px;
+      color: #667eea;
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">100</div>
+    <h1>The Challenge 100</h1>
+    <p class="subtitle">100명이 만드는 25개 팀의 도전</p>
+    <div class="phase-badge" id="phaseBadge">로딩 중...</div>
+
+    <div class="cards">
+      <a href="/vote.html" class="card">
+        <div class="card-icon">🗳️</div>
+        <div class="card-title">리더 투표</div>
+        <div class="card-desc">같은 문제에 관심 있는 사람 중<br>리더 후보 3명 선택</div>
+      </a>
+
+      <a href="/teams.html" class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-title">팀 현황</div>
+        <div class="card-desc">구성된 팀과<br>팀원 현황 확인</div>
+      </a>
+
+      <a href="/admin.html" class="card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">운영자</div>
+        <div class="card-desc">참가자 관리, 투표 관리,<br>팀 확정</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const EVENT_ID = 1;
+
+    async function loadEventPhase() {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}`);
+        const data = await res.json();
+        if (data.success && data.event) {
+          const phaseLabels = {
+            'setup': '사전 준비 중',
+            'voting': '리더 투표 진행 중',
+            'leader_selection': '리더 선정 중',
+            'team_forming': '팀 구성 중',
+            'confirmed': '팀 확정 완료'
+          };
+          document.getElementById('phaseBadge').textContent = phaseLabels[data.event.phase] || data.event.phase;
+        } else {
+          document.getElementById('phaseBadge').textContent = '이벤트 없음';
+        }
+      } catch (e) {
+        document.getElementById('phaseBadge').textContent = '연결 오류';
+      }
+    }
+
+    loadEventPhase();
+  </script>
+</body>
+</html>

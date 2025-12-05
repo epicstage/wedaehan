@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>리더 투표 - The Challenge 100</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .back-btn {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    h1 { font-size: 28px; }
+
+    .auth-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .auth-section input {
+      width: 100%;
+      max-width: 400px;
+      padding: 15px 20px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    .auth-section input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .auth-section button {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .vote-info {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    .vote-info h3 { color: #667eea; margin-bottom: 10px; }
+    .vote-info p { color: #a0a0c0; font-size: 14px; }
+
+    .my-group {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .my-group-tag {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .selected-count {
+      background: #1a1a2e;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .selected-count .count {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    .submit-btn {
+      padding: 12px 30px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .candidates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+    }
+    .candidate-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .candidate-card:hover {
+      border-color: rgba(102, 126, 234, 0.5);
+    }
+    .candidate-card.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+    .candidate-card.myself {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+    .candidate-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .candidate-company {
+      font-size: 14px;
+      color: #a0a0c0;
+      margin-bottom: 10px;
+    }
+    .candidate-votes {
+      display: inline-block;
+      padding: 5px 12px;
+      background: rgba(102, 126, 234, 0.2);
+      border-radius: 15px;
+      font-size: 13px;
+      color: #667eea;
+    }
+    .check-icon {
+      float: right;
+      font-size: 24px;
+    }
+
+    .hidden { display: none; }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      background: #667eea;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back-btn">← 홈</a>
+      <h1>🗳️ 리더 투표</h1>
+    </div>
+
+    <!-- 인증 섹션 -->
+    <div class="auth-section" id="authSection">
+      <h2 style="margin-bottom: 20px;">본인 확인</h2>
+      <p style="color: #a0a0c0; margin-bottom: 20px;">등록된 이메일 또는 전화번호를 입력하세요</p>
+      <input type="text" id="authInput" placeholder="이메일 또는 전화번호">
+      <br>
+      <button onclick="authenticate()">확인</button>
+    </div>
+
+    <!-- 투표 섹션 -->
+    <div id="voteSection" class="hidden">
+      <div class="vote-info">
+        <h3>🗳️ 리더 투표 안내</h3>
+        <p>같은 문제 태그 그룹 내에서 "이 사람이 리더 했으면 좋겠다" 싶은 분 3명을 선택해주세요.<br>
+        득표 상위자가 리더로 선정되어 팀을 이끌게 됩니다.</p>
+      </div>
+
+      <div class="my-group">
+        <span>내 관심 문제:</span>
+        <span class="my-group-tag" id="myGroupTag">-</span>
+        <span id="myName" style="margin-left: auto; color: #a0a0c0;"></span>
+      </div>
+
+      <div class="selected-count">
+        <div>
+          <span style="color: #a0a0c0;">선택한 후보:</span>
+          <span class="count"><span id="selectedCount">0</span> / 3</span>
+        </div>
+        <button class="submit-btn" id="submitBtn" onclick="submitVotes()" disabled>투표하기</button>
+      </div>
+
+      <div class="candidates-grid" id="candidatesGrid">
+        <!-- 후보 카드들 -->
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script>
+    const EVENT_ID = 1;
+    let currentUser = null;
+    let selectedCandidates = [];
+
+    async function authenticate() {
+      const input = document.getElementById('authInput').value.trim();
+      if (!input) {
+        showToast('이메일 또는 전화번호를 입력하세요');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/participants`);
+        const data = await res.json();
+
+        if (data.success) {
+          const user = data.participants.find(p =>
+            p.email === input || p.phone === input || p.name === input
+          );
+
+          if (user) {
+            currentUser = user;
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('voteSection').classList.remove('hidden');
+            document.getElementById('myGroupTag').textContent = user.problem_tag || '미지정';
+            document.getElementById('myName').textContent = user.name;
+            loadCandidates();
+            loadMyVotes();
+          } else {
+            showToast('등록된 참가자를 찾을 수 없습니다');
+          }
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    async function loadCandidates() {
+      if (!currentUser) return;
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/participants?problem_tag=${encodeURIComponent(currentUser.problem_tag)}`);
+        const data = await res.json();
+
+        if (data.success) {
+          renderCandidates(data.participants);
+        }
+      } catch (e) {
+        showToast('후보 목록을 불러올 수 없습니다');
+      }
+    }
+
+    async function loadMyVotes() {
+      if (!currentUser) return;
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/votes/${currentUser.id}`);
+        const data = await res.json();
+
+        if (data.success && data.voted_for) {
+          selectedCandidates = data.voted_for;
+          updateUI();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderCandidates(candidates) {
+      const grid = document.getElementById('candidatesGrid');
+      grid.innerHTML = candidates.map(c => {
+        const isMyself = c.id === currentUser.id;
+        const isSelected = selectedCandidates.includes(c.id);
+
+        return `
+          <div class="candidate-card ${isSelected ? 'selected' : ''} ${isMyself ? 'myself' : ''}"
+               onclick="${isMyself ? '' : `toggleCandidate(${c.id})`}"
+               data-id="${c.id}">
+            ${isSelected ? '<span class="check-icon">✓</span>' : ''}
+            <div class="candidate-name">${c.name}</div>
+            <div class="candidate-company">${c.company || '-'}</div>
+            <span class="candidate-votes">득표 ${c.vote_count || 0}</span>
+            ${isMyself ? '<span style="float:right; color:#a0a0c0; font-size:12px;">나</span>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCandidate(id) {
+      const idx = selectedCandidates.indexOf(id);
+      if (idx >= 0) {
+        selectedCandidates.splice(idx, 1);
+      } else {
+        if (selectedCandidates.length >= 3) {
+          showToast('최대 3명까지 선택할 수 있습니다');
+          return;
+        }
+        selectedCandidates.push(id);
+      }
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('selectedCount').textContent = selectedCandidates.length;
+      document.getElementById('submitBtn').disabled = selectedCandidates.length === 0;
+
+      document.querySelectorAll('.candidate-card').forEach(card => {
+        const id = parseInt(card.dataset.id);
+        const isSelected = selectedCandidates.includes(id);
+        card.classList.toggle('selected', isSelected);
+
+        const checkIcon = card.querySelector('.check-icon');
+        if (isSelected && !checkIcon) {
+          card.insertAdjacentHTML('afterbegin', '<span class="check-icon">✓</span>');
+        } else if (!isSelected && checkIcon) {
+          checkIcon.remove();
+        }
+      });
+    }
+
+    async function submitVotes() {
+      if (!currentUser || selectedCandidates.length === 0) return;
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/votes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            voter_id: currentUser.id,
+            candidate_ids: selectedCandidates
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          showToast('투표가 완료되었습니다!');
+          loadCandidates(); // 득표수 업데이트
+        } else {
+          showToast(data.error || '투표 실패');
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>

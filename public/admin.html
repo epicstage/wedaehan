@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>운영자 - The Challenge 100</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .back-btn {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    h1 { font-size: 28px; }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+    }
+    .tab {
+      padding: 15px 25px;
+      background: transparent;
+      border: none;
+      color: #a0a0c0;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab:hover { color: #fff; }
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .phase-control {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .phase-btn {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .phase-btn:hover { border-color: #667eea; }
+    .phase-btn.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: transparent;
+    }
+    .phase-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+    .phase-btn.danger:hover { background: #ef4444; color: #fff; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #a0a0c0;
+      font-size: 14px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .form-group textarea {
+      min-height: 150px;
+      font-family: monospace;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    th {
+      color: #a0a0c0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    tr:hover { background: rgba(255,255,255,0.03); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-purple { background: rgba(102, 126, 234, 0.2); color: #667eea; }
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-item {
+      background: rgba(255,255,255,0.03);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+    .stat-item .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    .stat-item .label {
+      font-size: 13px;
+      color: #a0a0c0;
+      margin-top: 5px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      background: #667eea;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 1000;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back-btn">← 홈</a>
+      <h1>⚙️ 운영자 페이지</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('overview')">개요</button>
+      <button class="tab" onclick="showTab('participants')">참가자 관리</button>
+      <button class="tab" onclick="showTab('voting')">투표 현황</button>
+      <button class="tab" onclick="showTab('teams')">팀 관리</button>
+    </div>
+
+    <!-- 개요 탭 -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="card">
+        <h3>📊 현재 상태</h3>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="value" id="statParticipants">-</div>
+            <div class="label">전체 참가자</div>
+          </div>
+          <div class="stat-item">
+            <div class="value" id="statVoted">-</div>
+            <div class="label">투표 완료</div>
+          </div>
+          <div class="stat-item">
+            <div class="value" id="statLeaders">-</div>
+            <div class="label">선정된 리더</div>
+          </div>
+          <div class="stat-item">
+            <div class="value" id="statTeams">-</div>
+            <div class="label">구성된 팀</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎮 단계 관리</h3>
+        <p style="color: #a0a0c0; margin-bottom: 20px;">현재 단계: <span id="currentPhase" class="badge badge-purple">-</span></p>
+        <div class="phase-control">
+          <button class="phase-btn" onclick="setPhase('setup')">1. 사전 준비</button>
+          <button class="phase-btn" onclick="setPhase('voting')">2. 투표 시작</button>
+          <button class="phase-btn" onclick="selectLeaders()">3. 리더 선정</button>
+          <button class="phase-btn" onclick="setPhase('team_forming')">4. 팀 구성</button>
+          <button class="phase-btn" onclick="setPhase('confirmed')">5. 최종 확정</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 참가자 관리 탭 -->
+    <div id="tab-participants" class="tab-content">
+      <div class="card">
+        <h3>📥 참가자 Import</h3>
+        <p style="color: #a0a0c0; margin-bottom: 15px;">
+          CSV 형식: name, company, email, phone, problem_tag (첫 줄은 헤더)
+        </p>
+        <div class="form-group">
+          <label>CSV 데이터 붙여넣기</label>
+          <textarea id="csvInput" placeholder="name,company,email,phone,problem_tag
+홍길동,ABC회사,hong@example.com,010-1234-5678,환경문제
+김철수,XYZ기업,kim@example.com,010-9876-5432,교육혁신"></textarea>
+        </div>
+        <button class="btn" onclick="importParticipants()">Import</button>
+      </div>
+
+      <div class="card">
+        <h3>👥 참가자 목록</h3>
+        <div id="participantsTable">
+          <table>
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>소속</th>
+                <th>문제 태그</th>
+                <th>득표</th>
+                <th>리더</th>
+              </tr>
+            </thead>
+            <tbody id="participantsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 투표 현황 탭 -->
+    <div id="tab-voting" class="tab-content">
+      <div class="card">
+        <h3>📊 문제 태그별 투표 현황</h3>
+        <div id="votingStats"></div>
+      </div>
+    </div>
+
+    <!-- 팀 관리 탭 -->
+    <div id="tab-teams" class="tab-content">
+      <div class="card">
+        <h3>👥 팀 목록</h3>
+        <div id="teamsTable">
+          <table>
+            <thead>
+              <tr>
+                <th>문제 태그</th>
+                <th>리더</th>
+                <th>팀원 수</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="teamsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script>
+    const EVENT_ID = 1;
+
+    function showTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.tab[onclick="showTab('${name}')"]`).classList.add('active');
+      document.getElementById(`tab-${name}`).classList.add('active');
+
+      if (name === 'participants') loadParticipants();
+      if (name === 'voting') loadVotingStats();
+      if (name === 'teams') loadTeams();
+    }
+
+    async function loadOverview() {
+      try {
+        // 이벤트 정보
+        const eventRes = await fetch(`/api/events/${EVENT_ID}`);
+        const eventData = await eventRes.json();
+        if (eventData.success) {
+          document.getElementById('currentPhase').textContent = eventData.event.phase;
+        }
+
+        // 참가자 수
+        const partRes = await fetch(`/api/events/${EVENT_ID}/participants`);
+        const partData = await partRes.json();
+        if (partData.success) {
+          document.getElementById('statParticipants').textContent = partData.participants.length;
+          document.getElementById('statLeaders').textContent = partData.participants.filter(p => p.is_leader).length;
+        }
+
+        // 팀 수
+        const teamRes = await fetch(`/api/events/${EVENT_ID}/teams`);
+        const teamData = await teamRes.json();
+        if (teamData.success) {
+          document.getElementById('statTeams').textContent = teamData.teams.length;
+        }
+
+        document.getElementById('statVoted').textContent = '-'; // TODO: 투표 완료자 수
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function setPhase(phase) {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/phase`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phase })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`단계가 ${phase}로 변경되었습니다`);
+          loadOverview();
+        } else {
+          showToast(data.error);
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    async function selectLeaders() {
+      if (!confirm('투표 결과를 기반으로 리더를 자동 선정하시겠습니까?')) return;
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/leaders/select`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`${data.leader_count}명의 리더가 선정되었습니다`);
+          loadOverview();
+        } else {
+          showToast(data.error);
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    async function importParticipants() {
+      const csv = document.getElementById('csvInput').value.trim();
+      if (!csv) {
+        showToast('CSV 데이터를 입력하세요');
+        return;
+      }
+
+      const lines = csv.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      const participants = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length < 2) continue;
+
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = values[idx] || '');
+        participants.push(obj);
+      }
+
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/participants/import`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participants })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`${data.count}명 등록 완료`);
+          document.getElementById('csvInput').value = '';
+          loadParticipants();
+          loadOverview();
+        } else {
+          showToast(data.error);
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    async function loadParticipants() {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/participants`);
+        const data = await res.json();
+
+        if (data.success) {
+          const tbody = document.getElementById('participantsBody');
+          tbody.innerHTML = data.participants.map(p => `
+            <tr>
+              <td>${p.name}</td>
+              <td>${p.company || '-'}</td>
+              <td><span class="badge badge-purple">${p.problem_tag || '-'}</span></td>
+              <td>${p.vote_count || 0}</td>
+              <td>${p.is_leader ? '<span class="badge badge-green">리더</span>' : '-'}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadVotingStats() {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/problem-tags`);
+        const data = await res.json();
+
+        if (data.success) {
+          const container = document.getElementById('votingStats');
+          let html = '<div class="stats-row">';
+          for (const tag of data.tags) {
+            html += `
+              <div class="stat-item" style="cursor:pointer" onclick="showTagVotes('${tag.problem_tag}')">
+                <div class="value">${tag.count}</div>
+                <div class="label">${tag.problem_tag}</div>
+              </div>
+            `;
+          }
+          html += '</div>';
+          container.innerHTML = html;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function showTagVotes(tag) {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/votes/results?problem_tag=${encodeURIComponent(tag)}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const list = data.results.map(p => `${p.name} (${p.company || '-'}): ${p.vote_count}표`).join('\n');
+          alert(`[${tag}] 투표 현황\n\n${list}`);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadTeams() {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/teams`);
+        const data = await res.json();
+
+        if (data.success) {
+          const tbody = document.getElementById('teamsBody');
+          tbody.innerHTML = data.teams.map(t => `
+            <tr>
+              <td><span class="badge badge-purple">${t.problem_tag || '-'}</span></td>
+              <td>${t.leader_name}</td>
+              <td>${t.member_count || 1} / 4</td>
+              <td><span class="badge ${t.status === 'confirmed' ? 'badge-green' : 'badge-yellow'}">${t.status}</span></td>
+              <td>
+                ${t.status !== 'confirmed' ? `<button class="btn" style="padding:6px 12px; font-size:12px;" onclick="confirmTeam(${t.id})">확정</button>` : '-'}
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function confirmTeam(teamId) {
+      try {
+        const res = await fetch(`/api/events/${EVENT_ID}/teams/${teamId}/confirm`, { method: 'PATCH' });
+        const data = await res.json();
+        if (data.success) {
+          showToast('팀이 확정되었습니다');
+          loadTeams();
+        } else {
+          showToast(data.error);
+        }
+      } catch (e) {
+        showToast('오류가 발생했습니다');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // 초기 로드
+    loadOverview();
+  </script>
+</body>
+</html>
